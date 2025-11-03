@@ -12,7 +12,6 @@ This project implements a modern DevOps automation pipeline with:
 - **Automated CI/CD** with GitHub Actions workflows
 - **Application Deployment** directly to AWS infrastructure (ECR, ECS, Lambda)
 - **Remote State Management** with S3 and DynamoDB
-- **Terraform Cloud Integration** for collaborative infrastructure management
 
 ## 🎯 What This Project Does
 
@@ -22,8 +21,6 @@ This automation pipeline demonstrates a fully connected DevOps workflow where:
 - **End-to-end automation** connects infrastructure creation to application deployment seamlessly
 - **Zero manual intervention** - from code push to running application on AWS
 - **Secure authentication** using OIDC without storing AWS credentials
-- **State management** with Terraform Cloud for team collaboration
-- **Multi-environment workflows** supporting dev/staging/production deployments
 
 ## 🎯 Automated Deployment Guide
 

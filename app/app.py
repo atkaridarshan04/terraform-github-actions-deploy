@@ -3,7 +3,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Hello from Terraform + GitHub Actions + EC2! - Version 1.0"
+    return "Hello from Terraform + GitHub Actions + EC2! - Version 2.0"
 
 @app.route('/health')
 def health():

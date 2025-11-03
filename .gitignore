@@ -3,3 +3,4 @@ terraform.tfstate*
 *.tfvars
 __pycache__/
 .env
+bootstrap/.terraform.lock.hcl

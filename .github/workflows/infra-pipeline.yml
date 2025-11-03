@@ -1,0 +1,75 @@
+name: Infra Pipeline (Terraform on AWS)
+
+on:
+  push:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-pipeline.yml"
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-north-1
+  TF_WORKING_DIR: infra
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init
+
+      - name: Validate Terraform configuration
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Export Terraform Outputs to GitHub Secrets
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          echo "Extracting Terraform outputs..."
+          ECR_REPO_URL=$(terraform output -raw ecr_repository_url)
+          # ECR_REPO_NAME=$(terraform output -raw ecr_repository_name)
+          EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
+          # EC2_PUBLIC_DNS=$(terraform output -raw ec2_public_dns)
+          SSH_KEY=$(terraform output -raw ssh_private_key)
+
+          echo "Updating GitHub secrets..."
+          gh secret set ECR_REPO_URL --body "$ECR_REPO_URL" --repo ${{ github.repository }}
+          # gh secret set ECR_REPO_NAME --body "$ECR_REPO_NAME" --repo ${{ github.repository }}
+          gh secret set EC2_PUBLIC_IP --body "$EC2_PUBLIC_IP" --repo ${{ github.repository }}
+          # gh secret set EC2_PUBLIC_DNS --body "$EC2_PUBLIC_DNS" --repo ${{ github.repository }}
+          gh secret set SSH_PRIVATE_KEY --body "$SSH_KEY" --repo ${{ github.repository }}
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

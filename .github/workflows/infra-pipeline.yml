@@ -13,7 +13,6 @@ permissions:
   id-token: write
   contents: read
   actions: write
-  secrets: write
 
 env:
   AWS_REGION: eu-north-1

@@ -1,12 +1,12 @@
 name: App Pipeline (Build & Deploy Flask App)
 
 on:
-  push:
-    paths:
-      - "app/**"
-      - ".github/workflows/app-pipeline.yml"
-    branches:
-      - main
+  # push:
+  #   paths:
+  #     - "app/**"
+  #     - ".github/workflows/app-pipeline.yml"
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 permissions:

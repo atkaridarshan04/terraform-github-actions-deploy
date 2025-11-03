@@ -1,12 +1,12 @@
 name: Infra Pipeline (Terraform on AWS)
 
 on:
-  push:
-    paths:
-      - "infra/**"
-      - ".github/workflows/infra-pipeline.yml"
-    branches:
-      - main
+  # push:
+  #   paths:
+  #     - "infra/**"
+  #     - ".github/workflows/infra-pipeline.yml"
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 permissions:

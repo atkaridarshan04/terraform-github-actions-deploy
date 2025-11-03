@@ -1,37 +1,48 @@
 # 🔐 AWS OIDC Bootstrap Setup (Terraform)
 
-This folder bootstraps the **AWS OpenID Connect (OIDC)** trust configuration that allows **GitHub Actions** workflows to deploy AWS infrastructure **without using long-lived AWS access keys**.
-
+This folder bootstraps the **AWS OpenID Connect (OIDC)** trust configuration and **Terraform remote state backend** that enables secure, automated infrastructure deployment via **GitHub Actions**.
 
 ## 📘 Overview
 
-GitHub Actions supports secure authentication to AWS via **OpenID Connect (OIDC)**.  
-Instead of storing static AWS credentials in GitHub secrets, your workflows can request **short-lived, automatically rotated credentials** from AWS.
+This bootstrap performs a **one-time setup** in your AWS account to enable:
+- **Secure OIDC authentication** for GitHub Actions (no long-lived AWS keys)
+- **Remote state management** with S3 and DynamoDB for Terraform Cloud integration
 
-This bootstrap Terraform code performs a **one-time setup** in your AWS account:
+### Resources Created:
 
-1. Creates an **OIDC Provider** for GitHub (`token.actions.githubusercontent.com`).
-2. Creates an **IAM Role** trusted by that provider.
-3. Attaches the required permissions to the role (e.g. `AdministratorAccess` for testing).
-4. Defines strict conditions — only your specific GitHub repository can assume this role.
+1. **OIDC Provider** for GitHub (`token.actions.githubusercontent.com`)
+2. **IAM Role** with GitHub repository trust policy
+3. **S3 Bucket** for Terraform state storage with versioning and encryption
+4. **DynamoDB Table** for Terraform state locking and consistency
+5. **IAM Policies** for secure state management
 
 After this setup:
-- All CI/CD pipelines use the OIDC role directly for Terraform, deployments, etc.
+- All CI/CD pipelines use the OIDC role directly for Terraform operations
+- Terraform state is securely stored in S3 with DynamoDB locking
+- Multiple team members can collaborate safely on infrastructure
 
+## 🔒 Security Features
 
-## 🔒 Security Notes
+* **Repository-scoped access**: IAM Role trust policy limits access to your specific GitHub repository
+* **State encryption**: S3 bucket uses server-side encryption
+* **State locking**: DynamoDB prevents concurrent modifications
+* **Short-lived tokens**: AWS STS provides auto-rotated credentials
 
-* The IAM Role trust policy limits access to only your GitHub repository:
+```hcl
+"StringLike": {
+  "token.actions.githubusercontent.com:sub": "repo:<ORG>/<REPO>:*"
+}
+```
 
-  ```hcl
-  "StringLike": {
-    "token.actions.githubusercontent.com:sub": "repo:<ORG>/<REPO>:*"
-  }
-  ```
-* You can attach a **custom IAM policy** instead of full admin access once verified.
-* Tokens are **short-lived** and **auto-rotated** by AWS STS.
+## 🚀 Usage
+
+```bash
+cd bootstrap
+terraform init
+terraform plan
+terraform apply
+```
 
 ---
 
-🧩 *Once this bootstrap is applied successfully, your GitHub repository becomes a fully trusted OIDC identity in AWS.*
-
+🧩 *Once applied, your GitHub repository becomes a trusted OIDC identity with secure remote state management.*
